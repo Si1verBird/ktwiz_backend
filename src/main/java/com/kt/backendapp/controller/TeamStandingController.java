@@ -48,7 +48,7 @@ public class TeamStandingController {
     @GetMapping("/kt-wiz")
     public ResponseEntity<TeamStandingResponse> getKtWizStanding() {
         log.info("KT Wiz 팀 순위 정보 조회 요청 (메인페이지용)");
-        TeamStandingResponse standing = teamStandingService.getTeamStandingByName("KT wiz");
+        TeamStandingResponse standing = teamStandingService.getTeamStandingByName("kt 위즈");
         
         if (standing == null) {
             return ResponseEntity.notFound().build();
