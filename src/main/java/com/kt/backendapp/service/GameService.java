@@ -84,7 +84,6 @@ public class GameService {
 
         // 경기 생성
         Game game = new Game();
-        game.setId(UUID.randomUUID());
         game.setDateTime(request.getDateTime());
         game.setHomeTeam(homeTeam);
         game.setAwayTeam(awayTeam);
@@ -282,7 +281,7 @@ public class GameService {
      */
     @Transactional(readOnly = true)
     public GameResponse getKtWizLatestEndedGame() {
-        log.debug("KT Wiz의 최근 종료된 경기 조회");
+        log.info("KT Wiz의 최근 종료된 경기 조회 시작");
         
         // KT Wiz ID (UUID: 20000000-0000-0000-0000-000000000008)
         UUID ktWizId = UUID.fromString("20000000-0000-0000-0000-000000000008");
@@ -290,13 +289,16 @@ public class GameService {
         // KT Wiz가 참여한 종료된 경기 중 가장 최근 경기 조회
         List<Game> endedGames = gameRepository.findByTeamIdAndStatusOrderByDateTimeDesc(ktWizId, GameStatus.ended);
         
+        log.info("KT Wiz 종료된 경기 총 {}개 발견", endedGames.size());
+        
         if (endedGames.isEmpty()) {
-            log.info("KT Wiz의 종료된 경기가 없습니다");
+            log.warn("KT Wiz의 종료된 경기가 없습니다");
             return null;
         }
         
         Game game = endedGames.get(0); // 가장 최근 경기
-        log.info("KT Wiz의 최근 종료된 경기 조회 완료: {}", game.getId());
+        log.info("KT Wiz의 최근 종료된 경기 조회 완료: ID={}, 날짜={}, 홈팀={}, 원정팀={}", 
+                game.getId(), game.getDateTime(), game.getHomeTeam().getName(), game.getAwayTeam().getName());
         return convertToResponse(game);
     }
 

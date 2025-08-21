@@ -122,14 +122,21 @@ public class GameController {
      */
     @PostMapping
     public ResponseEntity<GameResponse> createGame(@RequestBody GameRequest request) {
-        log.info("경기 생성 요청: {}", request);
+        log.info("경기 생성 요청 시작");
+        log.info("요청 데이터: dateTime={}, homeTeamId={}, awayTeamId={}, status={}, ticketPrice={}", 
+                request.getDateTime(), request.getHomeTeamId(), request.getAwayTeamId(), 
+                request.getStatus(), request.getTicketPrice());
         
         try {
             GameResponse createdGame = gameService.createGame(request);
+            log.info("경기 생성 성공: {}", createdGame.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(createdGame);
         } catch (IllegalArgumentException e) {
-            log.error("경기 생성 실패: {}", e.getMessage());
+            log.error("경기 생성 실패 (잘못된 요청): {}", e.getMessage());
             return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("경기 생성 실패 (서버 오류): ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
