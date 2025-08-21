@@ -16,7 +16,7 @@ public interface ChatRepository extends JpaRepository<Chat, UUID> {
     /**
      * 세션별 채팅 내역 조회 (생성일시 순)
      */
-    @Query("SELECT c FROM Chat c WHERE c.sessionId = :sessionId ORDER BY c.createdAt ASC")
+    @Query("SELECT c FROM Chat c LEFT JOIN FETCH c.user WHERE c.sessionId = :sessionId ORDER BY c.createdAt ASC")
     List<Chat> findBySessionIdOrderByCreatedAtAsc(@Param("sessionId") UUID sessionId);
     
     /**

@@ -1,6 +1,6 @@
 package com.kt.backendapp.controller;
 
-import com.kt.backendapp.entity.Chat;
+import com.kt.backendapp.dto.ChatResponse;
 import com.kt.backendapp.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/chats")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class ChatController {
     
     private final ChatService chatService;
@@ -35,10 +34,10 @@ public class ChatController {
      * 세션별 채팅 내역 조회
      */
     @GetMapping("/session/{sessionId}")
-    public ResponseEntity<List<Chat>> getChatHistory(@PathVariable UUID sessionId) {
+    public ResponseEntity<List<ChatResponse>> getChatHistory(@PathVariable UUID sessionId) {
         log.info("채팅 내역 조회 요청: sessionId={}", sessionId);
         
-        List<Chat> chatHistory = chatService.getChatHistory(sessionId);
+        List<ChatResponse> chatHistory = chatService.getChatHistory(sessionId);
         return ResponseEntity.ok(chatHistory);
     }
     
@@ -46,12 +45,12 @@ public class ChatController {
      * 메시지 전송 (사용자 → 봇)
      */
     @PostMapping("/message")
-    public ResponseEntity<Chat> sendMessage(@RequestBody MessageRequest request) {
+    public ResponseEntity<ChatResponse> sendMessage(@RequestBody MessageRequest request) {
         log.info("메시지 전송 요청: sessionId={}", request.getSessionId());
         
         try {
             // 사용자 메시지 저장
-            Chat userMessage = chatService.saveUserMessage(
+            ChatResponse userMessage = chatService.saveUserMessage(
                 request.getSessionId(), 
                 request.getUserId(), 
                 request.getMessage()
@@ -59,13 +58,36 @@ public class ChatController {
             
             // 봇 응답 생성 및 저장
             String botResponse = chatService.generateBotResponse(request.getMessage());
-            Chat botMessage = chatService.saveBotMessage(request.getSessionId(), botResponse);
+            ChatResponse botMessage = chatService.saveBotMessage(request.getSessionId(), botResponse);
             
             // 사용자 메시지 반환 (프론트에서 봇 응답은 별도 조회)
             return ResponseEntity.ok(userMessage);
             
         } catch (Exception e) {
             log.error("메시지 전송 중 오류 발생", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * 관리자 메시지 전송
+     */
+    @PostMapping("/admin-message")
+    public ResponseEntity<ChatResponse> sendAdminMessage(@RequestBody AdminMessageRequest request) {
+        log.info("관리자 메시지 전송 요청: sessionId={}, adminId={}", request.getSessionId(), request.getAdminId());
+        
+        try {
+            // 관리자 메시지 저장
+            ChatResponse adminMessage = chatService.saveAdminMessage(
+                request.getSessionId(), 
+                request.getAdminId(), 
+                request.getMessage()
+            );
+            
+            return ResponseEntity.ok(adminMessage);
+            
+        } catch (Exception e) {
+            log.error("관리자 메시지 전송 중 오류 발생", e);
             return ResponseEntity.badRequest().build();
         }
     }
@@ -83,6 +105,24 @@ public class ChatController {
         
         public UUID getUserId() { return userId; }
         public void setUserId(UUID userId) { this.userId = userId; }
+        
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+    }
+    
+    /**
+     * 관리자 메시지 요청 DTO
+     */
+    public static class AdminMessageRequest {
+        private UUID sessionId;
+        private UUID adminId;  // 관리자 사용자 ID
+        private String message;
+        
+        public UUID getSessionId() { return sessionId; }
+        public void setSessionId(UUID sessionId) { this.sessionId = sessionId; }
+        
+        public UUID getAdminId() { return adminId; }
+        public void setAdminId(UUID adminId) { this.adminId = adminId; }
         
         public String getMessage() { return message; }
         public void setMessage(String message) { this.message = message; }

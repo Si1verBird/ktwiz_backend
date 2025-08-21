@@ -1,5 +1,6 @@
 package com.kt.backendapp.service;
 
+import com.kt.backendapp.dto.ChatResponse;
 import com.kt.backendapp.entity.Chat;
 import com.kt.backendapp.entity.User;
 import com.kt.backendapp.enums.ChatRole;
@@ -11,8 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,7 +36,7 @@ public class ChatService {
     /**
      * 사용자 메시지 저장
      */
-    public Chat saveUserMessage(UUID sessionId, UUID userId, String message) {
+    public ChatResponse saveUserMessage(UUID sessionId, UUID userId, String message) {
         log.info("사용자 메시지 저장: sessionId={}, userId={}", sessionId, userId);
         
         User user = null;
@@ -42,40 +45,99 @@ public class ChatService {
         }
         
         Chat chat = new Chat();
-        chat.setId(UUID.randomUUID());
         chat.setSessionId(sessionId);
         chat.setUser(user);
         chat.setRole(ChatRole.USER);
         chat.setMessage(message);
         chat.setCreatedAt(LocalDateTime.now());
         
-        return chatRepository.save(chat);
+        Chat saved = chatRepository.save(chat);
+        return convertToChatResponse(saved);
     }
     
     /**
      * 봇 응답 저장
      */
-    public Chat saveBotMessage(UUID sessionId, String message) {
+    public ChatResponse saveBotMessage(UUID sessionId, String message) {
         log.info("봇 응답 저장: sessionId={}", sessionId);
         
         Chat chat = new Chat();
-        chat.setId(UUID.randomUUID());
         chat.setSessionId(sessionId);
         chat.setUser(null);  // 봇은 user가 null
         chat.setRole(ChatRole.ASSISTANT);
         chat.setMessage(message);
         chat.setCreatedAt(LocalDateTime.now());
         
-        return chatRepository.save(chat);
+        Chat saved = chatRepository.save(chat);
+        return convertToChatResponse(saved);
     }
     
     /**
-     * 세션별 채팅 내역 조회
+     * 관리자 응답 저장
+     */
+    public ChatResponse saveAdminMessage(UUID sessionId, UUID adminId, String message) {
+        log.info("관리자 응답 저장: sessionId={}, adminId={}", sessionId, adminId);
+        
+        User admin = userRepository.findById(adminId).orElse(null);
+        
+        Chat chat = new Chat();
+        chat.setSessionId(sessionId);
+        chat.setUser(admin);
+        chat.setRole(ChatRole.ADMIN);
+        chat.setMessage(message);
+        chat.setCreatedAt(LocalDateTime.now());
+        
+        Chat saved = chatRepository.save(chat);
+        return convertToChatResponse(saved);
+    }
+    
+    /**
+     * 세션별 채팅 내역 조회 (DTO 반환)
      */
     @Transactional(readOnly = true)
-    public List<Chat> getChatHistory(UUID sessionId) {
+    public List<ChatResponse> getChatHistory(UUID sessionId) {
         log.info("채팅 내역 조회: sessionId={}", sessionId);
-        return chatRepository.findBySessionIdOrderByCreatedAtAsc(sessionId);
+        List<Chat> chats = chatRepository.findBySessionIdOrderByCreatedAtAsc(sessionId);
+        
+        // 각 Chat 엔티티를 DTO로 변환하여 Hibernate 프록시 문제 해결
+        List<ChatResponse> responses = new ArrayList<>();
+        for (Chat chat : chats) {
+            ChatResponse.UserDto userDto = null;
+            
+            try {
+                if (chat.getUser() != null) {
+                    UUID userId = chat.getUser().getId();
+                    if (userId != null) {
+                        // User 정보가 있는 경우에만 처리
+                        User user = userRepository.findById(userId).orElse(null);
+                        if (user != null) {
+                            userDto = ChatResponse.UserDto.builder()
+                                    .id(user.getId())
+                                    .email(user.getEmail())
+                                    .nickname(user.getNickname())
+                                    .isAdmin(user.isAdmin())
+                                    .build();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("User 정보 로드 실패 for chat {}: {}", chat.getId(), e.getMessage());
+                // userDto는 null로 유지
+            }
+            
+            ChatResponse response = ChatResponse.builder()
+                    .id(chat.getId())
+                    .sessionId(chat.getSessionId())
+                    .user(userDto)
+                    .role(chat.getRole())
+                    .message(chat.getMessage())
+                    .createdAt(chat.getCreatedAt())
+                    .build();
+            
+            responses.add(response);
+        }
+        
+        return responses;
     }
     
     /**
@@ -94,21 +156,35 @@ public class ChatService {
     }
     
     /**
-     * 간단한 봇 응답 생성 (향후 AI 연동 가능)
+     * 간단한 봇 응답 생성 (관리자가 응답하기 전까지 기본 응답)
      */
     public String generateBotResponse(String userMessage) {
-        String message = userMessage.toLowerCase();
-        
-        if (message.contains("안녕") || message.contains("하이") || message.contains("hello")) {
-            return "안녕하세요! 빅또리 비서입니다. 어떻게 도와드릴까요?";
-        } else if (message.contains("경기") || message.contains("일정")) {
-            return "KT wiz 경기 일정은 스케줄 메뉴에서 확인하실 수 있습니다. 다른 궁금한 점이 있으시면 언제든 말씀해주세요!";
-        } else if (message.contains("티켓") || message.contains("예매")) {
-            return "티켓 예매는 티켓예매 메뉴에서 진행하실 수 있습니다. 도움이 필요하시면 말씀해주세요!";
-        } else if (message.contains("감사") || message.contains("고마워")) {
-            return "천만에요! 더 궁금한 것이 있으시면 언제든 말씀해주세요.";
-        } else {
-            return "네, 무엇을 도와드릴까요? KT wiz 관련 정보, 티켓 예매, 경기 일정 등 궁금한 것이 있으시면 언제든 말씀해주세요!";
+        return "문의해주셔서 감사합니다. 관리자가 확인 후 답변드리겠습니다. 잠시만 기다려주세요.";
+    }
+    
+    /**
+     * Chat 엔티티를 ChatResponse DTO로 변환
+     */
+    private ChatResponse convertToChatResponse(Chat chat) {
+        ChatResponse.UserDto userDto = null;
+        if (chat.getUser() != null) {
+            // Hibernate 프록시 문제를 피하기 위해 필요한 필드만 직접 추출
+            User user = chat.getUser();
+            userDto = ChatResponse.UserDto.builder()
+                    .id(user.getId())
+                    .email(user.getEmail())
+                    .nickname(user.getNickname())
+                    .isAdmin(user.isAdmin())
+                    .build();
         }
+        
+        return ChatResponse.builder()
+                .id(chat.getId())
+                .sessionId(chat.getSessionId())
+                .user(userDto)
+                .role(chat.getRole())
+                .message(chat.getMessage())
+                .createdAt(chat.getCreatedAt())
+                .build();
     }
 }
