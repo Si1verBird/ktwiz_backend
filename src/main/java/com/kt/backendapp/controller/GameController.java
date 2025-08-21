@@ -152,6 +152,25 @@ public class GameController {
     }
 
     /**
+     * 경기 수정
+     */
+    @PutMapping("/{gameId}")
+    public ResponseEntity<GameResponse> updateGame(@PathVariable UUID gameId, @RequestBody GameRequest request) {
+        log.info("경기 수정 요청: {}", gameId);
+        
+        try {
+            GameResponse updatedGame = gameService.updateGame(gameId, request);
+            return ResponseEntity.ok(updatedGame);
+        } catch (IllegalArgumentException e) {
+            log.error("경기 수정 실패: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("경기 수정 중 오류 발생", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
      * 경기 삭제
      */
     @DeleteMapping("/{gameId}")

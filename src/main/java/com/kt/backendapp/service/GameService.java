@@ -97,6 +97,9 @@ public class GameService {
         Game savedGame = gameRepository.save(game);
         log.info("새 경기 생성 완료: {}", savedGame.getId());
 
+        // 새 경기 생성 후 팀 순위 새로고침 (경기 수가 변경되었으므로)
+        teamStandingService.updateAllTeamStandings();
+
         return convertToResponse(savedGame);
     }
 
@@ -233,6 +236,16 @@ public class GameService {
         awayTeamDto.setName(game.getAwayTeam().getName());
         awayTeamDto.setShortName(game.getAwayTeam().getShortName());
         response.setAwayTeam(awayTeamDto);
+
+        // 경기장 정보 (홈팀의 경기장)
+        if (game.getHomeTeam().getVenue() != null) {
+            GameResponse.VenueDto venueDto = new GameResponse.VenueDto();
+            venueDto.setId(game.getHomeTeam().getVenue().getId());
+            venueDto.setName(game.getHomeTeam().getVenue().getName());
+            venueDto.setLocation(game.getHomeTeam().getVenue().getLocation());
+            venueDto.setCapacity(game.getHomeTeam().getVenue().getCapacity());
+            response.setVenue(venueDto);
+        }
 
         return response;
     }
