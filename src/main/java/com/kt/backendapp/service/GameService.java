@@ -294,13 +294,32 @@ public class GameService {
                 teamIds != null ? teamIds.size() : 0, 
                 statuses != null ? statuses.size() : 0);
         
-        List<Game> games = gameRepository.findByTeamsAndStatusesOrderByDateTimeAsc(teamIds, statuses);
+        // 간단한 필터링 로직
+        if ((teamIds == null || teamIds.isEmpty()) && (statuses == null || statuses.isEmpty())) {
+            // 필터가 없으면 모든 경기 반환
+            List<Game> allGames = gameRepository.findAll();
+            return allGames.stream()
+                    .map(this::convertToResponse)
+                    .collect(Collectors.toList());
+        }
         
-        List<GameResponse> responses = games.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
+        // 팀 ID가 있는 경우
+        if (teamIds != null && !teamIds.isEmpty()) {
+            List<Game> games = gameRepository.findByHomeTeamIdInOrAwayTeamIdInAndStatusInOrderByDateTimeAsc(
+                teamIds, teamIds, statuses != null ? statuses : List.of());
+            return games.stream()
+                    .map(this::convertToResponse)
+                    .collect(Collectors.toList());
+        }
         
-        log.info("필터링된 경기 조회 완료: {}개", responses.size());
-        return responses;
+        // 상태만 있는 경우
+        if (statuses != null && !statuses.isEmpty()) {
+            List<Game> games = gameRepository.findByStatusInOrderByDateTimeAsc(statuses);
+            return games.stream()
+                    .map(this::convertToResponse)
+                    .collect(Collectors.toList());
+        }
+        
+        return List.of();
     }
 }
