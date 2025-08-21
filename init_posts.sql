@@ -1,3 +1,53 @@
+
+
+-- 아래는 초기값 인서트 함수 모음임--
+  -- 먼저 삭제 진행 : 외래키 관계 때문에 삭제 순서를 지켜야 함
+DELETE FROM chats;
+DELETE FROM tickets;
+DELETE FROM orders;
+DELETE FROM games;
+DELETE FROM team_standings;
+DELETE FROM posts;
+DELETE FROM users;
+DELETE FROM teams;
+DELETE FROM venues;
+
+
+-- 1. VENUES
+INSERT INTO venues (id, name, location, capacity)
+VALUES 
+  ('10000000-0000-0000-0000-000000000001', '서울종합운동장 야구장', '서울', 25000),
+  ('10000000-0000-0000-0000-000000000002', '대구삼성라이온즈파크', '대구', 24000),
+  ('10000000-0000-0000-0000-000000000003', '광주기아챔피언스필드', '광주', 22000),
+  ('10000000-0000-0000-0000-000000000004', '사직야구장', '부산', 26000),
+  ('10000000-0000-0000-0000-000000000005', '인천SSG랜더스필드', '인천', 25000),
+  ('10000000-0000-0000-0000-000000000006', '창원NC파크', '창원', 23000),
+  ('10000000-0000-0000-0000-000000000007', '고척스카이돔', '서울', 17000),
+  ('10000000-0000-0000-0000-000000000008', '수원kt위즈파크', '수원', 20000),
+  ('10000000-0000-0000-0000-000000000009', '대전한화생명이글스파크', '대전', 21000);
+
+-- 2. TEAMS
+INSERT INTO teams (id, name, short_name, venue_id)
+VALUES 
+  ('20000000-0000-0000-0000-000000000001', '두산 베어스', '두산', '10000000-0000-0000-0000-000000000001'),
+  ('20000000-0000-0000-0000-000000000002', '삼성 라이온즈', '삼성', '10000000-0000-0000-0000-000000000002'),
+  ('20000000-0000-0000-0000-000000000003', 'KIA 타이거즈', 'KIA', '10000000-0000-0000-0000-000000000003'),
+  ('20000000-0000-0000-0000-000000000004', '롯데 자이언츠', '롯데', '10000000-0000-0000-0000-000000000004'),
+  ('20000000-0000-0000-0000-000000000005', 'SSG 랜더스', 'SSG', '10000000-0000-0000-0000-000000000005'),
+  ('20000000-0000-0000-0000-000000000006', 'NC 다이노스', 'NC', '10000000-0000-0000-0000-000000000006'),
+  ('20000000-0000-0000-0000-000000000007', '키움 히어로즈', '키움', '10000000-0000-0000-0000-000000000007'),
+  ('20000000-0000-0000-0000-000000000008', 'kt 위즈', 'kt', '10000000-0000-0000-0000-000000000008'),
+  ('20000000-0000-0000-0000-000000000009', '한화 이글스', '한화', '10000000-0000-0000-0000-000000000009'),
+('20000000-0000-0000-0000-000000000010', 'LG 트윈스', '한화', '10000000-0000-0000-0000-000000000001');
+
+-- 3. USERS
+INSERT INTO users (id, email, password, nickname, is_admin)
+VALUES 
+  ('30000000-0000-0000-0000-000000000001', 'admin@example.com', 'admin123', '관리자', true),
+  ('30000000-0000-0000-0000-000000000002', 'user1@example.com', 'user1123', '유저1', false),
+  ('30000000-0000-0000-0000-000000000003', 'user2@example.com', 'user2123', '유저2', false);
+
+-- 4. GAMES
 -- games 테이블 초기 데이터 삽입
 -- 필요 시: CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -45,80 +95,26 @@ SELECT
   NULL::timestamp                                                                    AS updated_at
 FROM g;
 
--- posts 테이블 초기 데이터 삽입
-INSERT INTO posts (id, category, title, body, thumbnail, images, video_url, status, slug, author_id, deleted, created_at, updated_at) VALUES
-(
-    gen_random_uuid(),
-    'news',
-    'KT 위즈 2024 시즌 개막전 승리!',
-    '오늘 개막전에서 KT 위즈가 대승을 거두었습니다. 선수들의 뛰어난 활약과 팬들의 뜨거운 응원 덕분에 승리를 이끌어냈습니다. 앞으로도 많은 응원 부탁드립니다!',
-    'https://img.khan.co.kr/news/2023/10/07/news-p.v1.20231007.0ecbf17517364dbabd32d2285765d48e_P1.jpg',
-    'https://img.khan.co.kr/news/2023/10/07/news-p.v1.20231007.0ecbf17517364dbabd32d2285765d48e_P1.jpg',
-    NULL,
-    'published',
-    'kt-wiz-2024-opening-victory',
-    '30000000-0000-0000-0000-000000000001',
-    false,
-    NOW() - INTERVAL '2 hours',
-    NOW() - INTERVAL '2 hours'
-),
-(
-    gen_random_uuid(),
-    'highlight',
-    '강백호 선수 홈런 하이라이트',
-    '오늘 경기에서 강백호 선수가 멋진 홈런을 쳤습니다! 9회말 역전 홈런으로 승리를 이끌어낸 결정적인 순간이었습니다. 강백호 선수 파이팅!',
-    'https://img.khan.co.kr/news/2023/10/07/news-p.v1.20231007.0ecbf17517364dbabd32d2285765d48e_P1.jpg',
-    'https://img.khan.co.kr/news/2023/10/07/news-p.v1.20231007.0ecbf17517364dbabd32d2285765d48e_P1.jpg',
-    NULL,
-    'published',
-    'kang-baekho-homerun-highlight',
-    '30000000-0000-0000-0000-000000000001',
-    false,
-    NOW() - INTERVAL '4 hours',
-    NOW() - INTERVAL '4 hours'
-),
-(
-    gen_random_uuid(),
-    'news',
-    '내일 경기 티켓 예매 오픈 안내',
-    '내일 홈경기 티켓 예매가 오전 10시부터 시작됩니다. 많은 팬분들의 관람을 기다리고 있습니다. 온라인 예매는 공식 홈페이지에서 가능합니다.',
-    NULL,
-    NULL,
-    NULL,
-    'published',
-    'tomorrow-game-ticket-open',
-    '30000000-0000-0000-0000-000000000001',
-    false,
-    NOW() - INTERVAL '6 hours',
-    NOW() - INTERVAL '6 hours'
-),
-(
-    gen_random_uuid(),
-    'general',
-    '위즈파크 새로운 먹거리 추천',
-    '위즈파크에 새로운 치킨 가게가 생겼는데 정말 맛있어요! 경기 보면서 먹기 좋은 사이드 메뉴로 추천합니다. 다음 경기 때 꼭 먹어보세요.',
-    NULL,
-    NULL,
-    NULL,
-    'published',
-    'wizpark-new-food-recommendation',
-    '30000000-0000-0000-0000-000000000002',
-    false,
-    NOW() - INTERVAL '8 hours',
-    NOW() - INTERVAL '8 hours'
-),
-(
-    gen_random_uuid(),
-    'general',
-    '오늘 경기 응원 후기',
-    '오늘 경기 정말 짜릿했어요! 9회말 역전승 너무 감동적이었습니다. 선수들 다들 수고하셨고, 팬들도 정말 열심히 응원했어요. 다음 경기도 파이팅!',
-    NULL,
-    NULL,
-    NULL,
-    'published',
-    'today-game-cheer-review',
-    '30000000-0000-0000-0000-000000000003',
-    false,
-    NOW() - INTERVAL '10 hours',
-    NOW() - INTERVAL '10 hours'
-);
+
+
+-- 5. ORDERS
+INSERT INTO orders (id, user_id, game_id, unit_price, amount, status, paid_at, pg_provider, pg_tx_id, pg_payload, receipt_url)
+VALUES 
+  ('50000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000001', 15000, 2, 'paid', now(), 'KakaoPay', 'tx123abc', '{}', 'https://receipt.com/tx123abc');
+
+-- 6. TICKETS
+INSERT INTO tickets (id, order_id, voucher_code, status)
+VALUES 
+  ('60000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000001', 'TICKET-ABC123', 'valid'),
+  ('60000000-0000-0000-0000-000000000002', '50000000-0000-0000-0000-000000000001', 'TICKET-DEF456', 'valid');
+
+-- 7. POSTS
+INSERT INTO posts (id, category, title, body, status, slug, author_id)
+VALUES 
+  ('70000000-0000-0000-0000-000000000001', 'news', '개막전 대진 안내', '개막전 일정 및 티켓 정보 안내', 'published', 'opening-match-news', '30000000-0000-0000-0000-000000000001');
+
+-- 8. CHATS
+INSERT INTO chats (id, session_id, user_id, role, message)
+VALUES 
+  ('80000000-0000-0000-0000-000000000001', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '30000000-0000-0000-0000-000000000002', 'user', '내일 경기 몇 시에 시작하나요?'),
+  ('80000000-0000-0000-0000-000000000002', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '30000000-0000-0000-0000-000000000001', 'assistant', '오후 6시입니다.');
