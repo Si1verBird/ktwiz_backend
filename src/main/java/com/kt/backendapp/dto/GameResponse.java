@@ -26,6 +26,7 @@ public class GameResponse {
         private UUID id;
         private String name;
         private String shortName;
+        private String logoUrl;
     }
 
     @Data

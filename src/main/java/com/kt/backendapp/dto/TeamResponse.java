@@ -16,6 +16,7 @@ public class TeamResponse {
     private UUID id;
     private String name;
     private String shortName;
+    private String logoUrl;
     private VenueDto venue;
     private LocalDateTime createdAt;
 

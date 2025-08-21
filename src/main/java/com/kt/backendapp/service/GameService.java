@@ -228,6 +228,7 @@ public class GameService {
         homeTeamDto.setId(game.getHomeTeam().getId());
         homeTeamDto.setName(game.getHomeTeam().getName());
         homeTeamDto.setShortName(game.getHomeTeam().getShortName());
+        homeTeamDto.setLogoUrl(game.getHomeTeam().getLogoUrl());
         response.setHomeTeam(homeTeamDto);
 
         // 원정팀 정보
@@ -235,6 +236,7 @@ public class GameService {
         awayTeamDto.setId(game.getAwayTeam().getId());
         awayTeamDto.setName(game.getAwayTeam().getName());
         awayTeamDto.setShortName(game.getAwayTeam().getShortName());
+        awayTeamDto.setLogoUrl(game.getAwayTeam().getLogoUrl());
         response.setAwayTeam(awayTeamDto);
 
         // 경기장 정보 (홈팀의 경기장)
