@@ -55,6 +55,11 @@ docker-compose up -d
 - 데이터베이스: PostgreSQL (포트 5432)
 - JPA 설정: `application.yml`에서 확인
 
+## API 문서
+
+- **BACKEND_API_ENDPOINTS.txt**: 모든 API 엔드포인트 목록
+- **docker-compose.yml**: PostgreSQL 데이터베이스 설정
+
 ## 개발 환경
 
 - IDE: IntelliJ IDEA, VS Code
