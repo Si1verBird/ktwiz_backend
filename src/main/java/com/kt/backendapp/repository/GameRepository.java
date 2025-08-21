@@ -45,8 +45,8 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
     
     // 팀과 상태로 경기 필터링
     @Query("SELECT g FROM Game g WHERE " +
-           "(:teamIds IS NULL OR SIZE(:teamIds) = 0 OR g.homeTeam.id IN :teamIds OR g.awayTeam.id IN :teamIds) " +
-           "AND (:statuses IS NULL OR SIZE(:statuses) = 0 OR g.status IN :statuses) " +
+           "(:teamIds IS NULL OR :teamIds IS EMPTY OR g.homeTeam.id IN :teamIds OR g.awayTeam.id IN :teamIds) " +
+           "AND (:statuses IS NULL OR :statuses IS EMPTY OR g.status IN :statuses) " +
            "ORDER BY g.dateTime ASC")
     List<Game> findByTeamsAndStatusesOrderByDateTimeAsc(
         @Param("teamIds") List<UUID> teamIds, 
