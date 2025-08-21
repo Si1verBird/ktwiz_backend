@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class TeamService {
+public class TeamService implements TeamServiceInterface {
 
     private final TeamRepository teamRepository;
 

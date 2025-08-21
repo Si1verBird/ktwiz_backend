@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class VenueService {
+public class VenueService implements VenueServiceInterface {
 
     private final VenueRepository venueRepository;
 

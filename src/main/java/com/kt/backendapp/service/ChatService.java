@@ -15,13 +15,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class ChatService {
+public class ChatService implements ChatServiceInterface {
     
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;

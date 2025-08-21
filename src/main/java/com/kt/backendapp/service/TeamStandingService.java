@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TeamStandingService {
+public class TeamStandingService implements TeamStandingServiceInterface {
 
     private final TeamStandingRepository teamStandingRepository;
     private final GameRepository gameRepository;

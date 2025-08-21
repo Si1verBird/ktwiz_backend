@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class GameService {
+public class GameService implements GameServiceInterface {
 
     private final GameRepository gameRepository;
     private final TeamRepository teamRepository;
-    private final TeamStandingService teamStandingService;
+    private final TeamStandingServiceInterface teamStandingService;
 
     /**
      * 모든 경기 조회
@@ -108,9 +108,16 @@ public class GameService {
     @Transactional
     public GameResponse updateGame(UUID gameId, GameRequest request) {
         log.info("경기 수정 시작: {}", gameId);
+        log.info("수정 요청 데이터: homeTeamId={}, awayTeamId={}, status={}, inning={}, homeScore={}, awayScore={}", 
+                request.getHomeTeamId(), request.getAwayTeamId(), request.getStatus(), 
+                request.getInning(), request.getHomeScore(), request.getAwayScore());
 
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("경기를 찾을 수 없습니다."));
+        
+        log.info("수정 전 경기 정보: homeTeam={}, awayTeam={}, status={}, inning={}, homeScore={}, awayScore={}", 
+                game.getHomeTeam().getName(), game.getAwayTeam().getName(), game.getStatus(), 
+                game.getInning(), game.getHomeScore(), game.getAwayScore());
 
         // 기존 상태 저장 (통계 업데이트 판단용)
         GameStatus oldStatus = game.getStatus();
@@ -155,6 +162,9 @@ public class GameService {
         }
 
         log.info("경기 수정 완료: {}", gameId);
+        log.info("수정 후 경기 정보: homeTeam={}, awayTeam={}, status={}, inning={}, homeScore={}, awayScore={}", 
+                updatedGame.getHomeTeam().getName(), updatedGame.getAwayTeam().getName(), updatedGame.getStatus(), 
+                updatedGame.getInning(), updatedGame.getHomeScore(), updatedGame.getAwayScore());
         return convertToResponse(updatedGame);
     }
 
